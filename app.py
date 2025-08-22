@@ -1,12 +1,12 @@
+import os
 import streamlit as st
 from supabase import create_client, Client
 
-# Informações do Supabase
-url = "https://aihxqgjzssffqnuarhsa.supabase.co"
+# Pega as variáveis de ambiente
+url = os.environ.get("SUPABASE_URL")
+key = os.environ.get("SUPABASE_KEY")
 
-key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFpaHhxZ2p6c3NmZnFudWFyaHNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU4ODQ0NDYsImV4cCI6MjA3MTQ2MDQ0Nn0.XOup2xySwS5m33vKFpeGeehV02-z-PjtiDe2IHAmQv8"
-
-# Conecta ao Supabase
+# Cria cliente do supabase
 supabase: Client = create_client(url, key)
 
 st.title("Sistema de Vagas para Estudantes")
