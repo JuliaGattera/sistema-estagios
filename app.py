@@ -85,11 +85,53 @@ elif choice == "Login":
             # Verifica se é estudante
             estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
             if estudante.data:
-                nome = estudante.data[0]['nome']
-                st.success("Login como Estudante realizado com sucesso!")
-                st.write(f"Bem-vindo, {nome}")
-                # Aqui você pode mostrar painel do estudante
+                estudante_info = estudante.data[0]
+                nome = estudante_info['nome']
+                email = estudante_info.get('email', '')
+                telefone = estudante_info.get('telefone', '')
+                curso_id = estudante_info.get('curso_id')
 
+                st.success("Login como Estudante realizado com sucesso!")
+                st.header(f"Bem-vindo, {nome}")
+
+                aba = st.radio("Menu", ["Meus Dados", "Vagas Disponíveis"])
+
+                if aba == "Meus Dados":
+                    st.subheader("Informações Pessoais")
+                    novo_email = st.text_input("Email", value=email)
+                    novo_telefone = st.text_input("Telefone", value=telefone or "")
+
+                    if st.button("Atualizar dados"):
+                        try:
+                            supabase.table("estudantes").update({
+                                "email": novo_email,
+                                "telefone": novo_telefone
+                            }).eq("user_id", estudante_info['user_id']).execute()
+                            st.success("Dados atualizados com sucesso!")
+                        except Exception as e:
+                            st.error(f"Erro ao atualizar dados: {e}")
+
+                elif aba == "Vagas Disponíveis":
+                    st.subheader("Vagas compatíveis com seu curso")
+                    vagas = supabase.table("vagas").select("id, titulo, descricao, curso_id").eq("curso_id", curso_id).execute()
+
+                    if vagas.data:
+                        for vaga in vagas.data:
+                            st.markdown(f"### {vaga['titulo']}")
+                            st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}")
+                            if st.button(f"Candidatar-se à vaga: {vaga['titulo']}", key=vaga['id']):
+                                try:
+                                    supabase.table("log_vinculos_estudantes_vagas").insert({
+                                        "estudante_id": estudante_info['id'],
+                                        "vaga_id": vaga['id'],
+                                        "status": "notificado"
+                                    }).execute()
+                                    st.success("Candidatura registrada com sucesso!")
+                                except Exception as e:
+                                    st.error(f"Erro ao se candidatar: {e}")
+                    else:
+                        st.info("Nenhuma vaga disponível para seu curso no momento.")
+######################################################################################################
             else:
                 # Verifica se é empresa
                 empresa = supabase.table("empresas").select("*").eq("user_id", user_id).execute()
