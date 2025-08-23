@@ -124,7 +124,7 @@ else:
             logout()
 
         if aba == "Meus Dados":
-            novo_email = st.text_input("Email", value=user.get("email", ""))
+            st.text_input("Email", value=email, disabled=True)
             novo_telefone = st.text_input("Telefone", value=user.get("telefone", ""))
 
             if st.button("Atualizar dados"):
