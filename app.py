@@ -2,81 +2,76 @@ import os
 import streamlit as st
 from supabase import create_client, Client
 
-# Configurações iniciais
-st.set_page_config(page_title="Sistema de Vagas", layout="centered")
+# Configurações do Supabase
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Pega as variáveis de ambiente do Supabase
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+# Função para buscar tipo de usuário na tabela "usuarios"
+def get_user_profile(user_id):
+    response = supabase.table("usuarios").select("tipo_usuario").eq("id_auth", user_id).single().execute()
+    if response.data:
+        return response.data['tipo_usuario']
+    return None
 
-# Cria cliente Supabase
-supabase: Client = create_client(url, key)
+# Função para criar usuário na tabela "usuarios"
+def create_user_profile(user_id, tipo_usuario):
+    data = {"id_auth": user_id, "tipo_usuario": tipo_usuario}
+    supabase.table("usuarios").insert(data).execute()
 
-# Título principal do app
-st.title("Sistema de Vagas para Estudantes")
+# Login admin fixo
+def admin_login(username, password):
+    # Defina seu login e senha fixos aqui
+    return username == "admin" and password == "admin123"
 
-# Menu lateral
+# App começa aqui
+st.title("Sistema de Vagas para Estudantes - UNIUBE")
+
 menu = ["Login", "Cadastro"]
+perfil = ["Estudante", "Empresa", "Admin"]
 choice = st.sidebar.selectbox("Menu", menu)
 
-# --------------------
-# TELA DE CADASTRO
-# --------------------
 if choice == "Cadastro":
     st.subheader("Criar nova conta")
-
-    nome = st.text_input("Nome completo")
+    tipo_usuario = st.selectbox("Tipo de usuário", ["Estudante", "Empresa"])
     email = st.text_input("Email")
     senha = st.text_input("Senha", type="password")
-    matricula = st.text_input("Matrícula institucional")
-    telefone = st.text_input("Telefone para contato")
-
     if st.button("Cadastrar"):
-        if not nome or not email or not senha or not matricula:
-            st.warning("Preencha todos os campos obrigatórios.")
-        else:
-            try:
-                # Cria conta no Supabase Auth
-                res = supabase.auth.sign_up({"email": email, "password": senha})
+        try:
+            res = supabase.auth.sign_up({"email": email, "password": senha})
+            if res.user:
+                create_user_profile(res.user.id, tipo_usuario.lower())
+                st.success("Cadastro realizado! Verifique seu e-mail para confirmar.")
+            else:
+                st.error("Erro ao criar usuário.")
+        except Exception as e:
+            st.error(f"Erro: {e}")
 
-                # Se cadastro no Auth for bem-sucedido, salva dados na tabela "estudantes"
-                if res.user:
-                    supabase.table("estudantes").insert({
-                        "nome": nome,
-                        "email": email,
-                        "matricula": matricula,
-                        "telefone": telefone
-                    }).execute()
-
-                    st.success("Cadastro realizado com sucesso! Verifique seu e-mail para confirmar.")
-            except Exception as e:
-                st.error(f"Erro ao cadastrar: {e}")
-
-# --------------------
-# TELA DE LOGIN
-# --------------------
 elif choice == "Login":
     st.subheader("Entrar na conta")
-
+    tipo_usuario = st.selectbox("Perfil", perfil)
     email = st.text_input("Email")
     senha = st.text_input("Senha", type="password")
-
     if st.button("Login"):
-        try:
-            user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
-            st.success("Login realizado com sucesso!")
-            st.write("Usuário logado:", user.user.email)
-
-            # Busca dados do estudante após login (baseado no email)
-            dados_estudante = supabase.table("estudantes").select("*").eq("email", email).single().execute()
-
-            if dados_estudante.data:
-                st.subheader("Seu Perfil:")
-                st.write("Nome:", dados_estudante.data["nome"])
-                st.write("Matrícula:", dados_estudante.data["matricula"])
-                st.write("Telefone:", dados_estudante.data["telefone"])
+        if tipo_usuario == "Admin":
+            if admin_login(email, senha):
+                st.success("Login Admin realizado!")
+                st.write("Bem-vindo, Admin!")
+                # Aqui pode criar o menu/admin dashboard
             else:
-                st.warning("Cadastro incompleto. Nenhum dado encontrado para este e-mail.")
-
-        except Exception as e:
-            st.error(f"Erro no login: {e}")
+                st.error("Usuário ou senha inválidos para Admin.")
+        else:
+            try:
+                user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
+                if user.user:
+                    perfil_usuario = get_user_profile(user.user.id)
+                    if perfil_usuario != tipo_usuario.lower():
+                        st.error(f"Perfil incorreto. Você selecionou {tipo_usuario}, mas seu cadastro é {perfil_usuario}.")
+                    else:
+                        st.success(f"Login {tipo_usuario} realizado com sucesso!")
+                        st.write(f"Bem-vindo(a), {email}!")
+                        # Aqui você pode colocar o menu específico de Estudante ou Empresa
+                else:
+                    st.error("Erro no login.")
+            except Exception as e:
+                st.error(f"Erro no login: {e}")
