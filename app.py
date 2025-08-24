@@ -133,7 +133,13 @@ if st.session_state.user is None:
                 user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
                 user_id = user.user.id
         
-                # Verifica se é estudante
+                # Verifica se é admin antes de consultar o banco
+                if email == "admin@admin.com":
+                    st.session_state.user = {"email": email}
+                    st.session_state.user_type = 'admin'
+                    st.experimental_rerun()
+        
+                # Se não for admin, verifica se é estudante
                 estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
                 if estudante.data:
                     st.session_state.user = estudante.data[0]
@@ -148,13 +154,7 @@ if st.session_state.user is None:
                         st.session_state.user_type = 'empresa'
                         st.experimental_rerun()
                     else:
-                        # Verifica se é admin pelo e-mail
-                        if email == "admin@admin.com":
-                            st.session_state.user = {"email": email}
-                            st.session_state.user_type = 'admin'
-                            st.experimental_rerun()
-                        else:
-                            st.warning("Usuário não identificado como estudante, empresa ou admin.")
+                        st.warning("Usuário não identificado como estudante, empresa ou admin.")
         
             except Exception as e:
                 st.error(f"Erro no login: {e}")
