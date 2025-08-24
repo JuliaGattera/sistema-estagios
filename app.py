@@ -179,6 +179,8 @@ else:
                     st.error(f"Erro ao atualizar dados: {e}")
 
         elif aba == "Vagas Disponíveis":
+            user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
+            user_id = user.user.id
             vagas_filtradas = vagas_disponiveis_para_estudante(supabase, user_id)
         
             if vagas_filtradas:
