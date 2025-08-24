@@ -3,7 +3,7 @@
 import streamlit as st
 from supabase import Client
 
-def gerenciar_vagas_admin(supabase: Client):
+def gerenciar_vagas(supabase: Client):
     st.subheader("Gerenciar Vagas e Estudantes Vinculados")
 
     vagas = supabase.table("vagas").select("id, titulo, descricao, quantidade").execute().data
