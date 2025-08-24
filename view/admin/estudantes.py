@@ -1,71 +1,46 @@
-# view/admin/estudantes.py
-
 import streamlit as st
+from supabase import Client
 
-def gerenciar_estudantes(supabase):
-    st.subheader("Gerenciar Estudantes")
+def gerenciar_estudantes(supabase: Client):
+    st.subheader("Cadastrar Novo Estudante")
 
-    # Buscar cursos disponíveis
-    cursos_res = supabase.table("cursos").select("id, nome").execute()
-    cursos = cursos_res.data
-    cursos_dict = {c["nome"]: c["id"] for c in cursos}
+    nome = st.text_input("Nome")
+    email = st.text_input("Email")
+    matricula = st.text_input("Matrícula")
+    telefone = st.text_input("Telefone")
 
-    if not cursos:
-        st.warning("Cadastre um curso antes de adicionar estudantes.")
-        return
+    cursos = supabase.table("cursos").select("id, nome").execute().data
+    nomes_cursos = [c["nome"] for c in cursos]
+    curso_selecionado = st.selectbox("Curso", nomes_cursos)
+    curso_id = next((c["id"] for c in cursos if c["nome"] == curso_selecionado), None)
 
-    # Formulário para adicionar novo estudante
-    with st.expander("➕ Adicionar Estudante"):
-        nome = st.text_input("Nome do estudante")
-        matricula = st.text_input("Matrícula")
-        email = st.text_input("Email")
-        telefone = st.text_input("Telefone")
-        curso_nome = st.selectbox("Curso", list(cursos_dict.keys()))
+    if st.button("Cadastrar Estudante"):
+        if not nome or not email or not matricula or not curso_id:
+            st.warning("Preencha todos os campos obrigatórios.")
+        else:
+            try:
+                estudante_insert = supabase.table("estudantes").insert({
+                    "nome": nome,
+                    "email": email,
+                    "matricula": matricula,
+                    "telefone": telefone,
+                    "curso_id": curso_id
+                }).execute()
 
-        if st.button("Adicionar Estudante"):
-            if not nome or not matricula or not email or not curso_nome:
-                st.warning("Preencha todos os campos obrigatórios.")
-            else:
-                curso_id = cursos_dict[curso_nome]
+                estudante_id = estudante_insert.data[0]["id"]
 
-                # Inserir o estudante
-                try:
-                    novo_estudante = supabase.table("estudantes").insert({
-                        "nome": nome,
-                        "matricula": matricula,
-                        "email": email,
-                        "telefone": telefone,
-                        "curso_id": curso_id
-                    }).execute().data[0]
+                # Inserir notas iniciais 0.00 para todas as disciplinas do curso
+                disciplinas_res = supabase.table("disciplinas").select("id").eq("curso_id", curso_id).execute()
+                disciplinas = disciplinas_res.data
 
-                    estudante_id = novo_estudante["id"]
+                for disciplina in disciplinas:
+                    supabase.table("notas_estudantes").insert({
+                        "estudante_id": estudante_id,
+                        "disciplina_id": disciplina["id"],
+                        "nota": 0.00
+                    }).execute()
 
-                    # Buscar disciplinas do curso
-                    disciplinas_res = supabase.table("disciplinas").select("id").eq("curso_id", curso_id).execute()
-                    disciplinas = disciplinas_res.data
+                st.success("Estudante cadastrado com sucesso, com notas iniciais zeradas!")
 
-                    # Inserir notas zeradas para as disciplinas
-                    for disciplina in disciplinas:
-                        supabase.table("notas_estudantes").insert({
-                            "estudante_id": estudante_id,
-                            "disciplina_id": disciplina["id"],
-                            "nota": 0.0
-                        }).execute()
-
-                    st.success("Estudante cadastrado com sucesso!")
-
-                except Exception as e:
-                    st.error(f"Erro ao adicionar estudante: {e}")
-
-    # Listagem de estudantes cadastrados
-    st.divider()
-    st.subheader("Estudantes Cadastrados")
-
-    estudantes = supabase.table("estudantes").select("nome, matricula, email").execute().data
-
-    if estudantes:
-        for est in estudantes:
-            st.markdown(f"**{est['nome']}**  \nMatrícula: {est['matricula']}  \nEmail: {est['email']}")
-            st.markdown("---")
-    else:
-        st.info("Nenhum estudante cadastrado.")
+            except Exception as e:
+                st.error(f"Erro ao cadastrar estudante: {e}")
