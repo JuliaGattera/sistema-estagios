@@ -17,6 +17,46 @@ if 'user' not in st.session_state:
 if 'user_type' not in st.session_state:
     st.session_state.user_type = None
 
+##########################################
+###função que faz a triagem das vagas que serão exibidas para o aluno:
+def vagas_disponiveis_para_estudante(supabase: Client, user_id: str, nota_minima=7.0):
+    # 1. Buscar estudante e seu curso
+    estudante_res = supabase.table("estudantes").select("id, curso_id").eq("user_id", user_id).execute()
+    if not estudante_res.data:
+        return []
+
+    estudante = estudante_res.data[0]
+    estudante_id = estudante["id"]
+    curso_id = estudante["curso_id"]
+
+    # 2. Buscar vagas do curso
+    vagas_res = supabase.table("vagas").select("id, titulo, descricao").eq("curso_id", curso_id).execute()
+    vagas = vagas_res.data
+
+    vagas_filtradas = []
+
+    for vaga in vagas:
+        vaga_id = vaga["id"]
+        
+        # 3. Buscar disciplinas exigidas pela vaga
+        vagas_disciplinas_res = supabase.table("vagas_disciplinas").select("disciplina_id").eq("vaga_id", vaga_id).execute()
+        disciplinas_ids = [d["disciplina_id"] for d in vagas_disciplinas_res.data]
+
+        # 4. Buscar notas do estudante nessas disciplinas
+        notas_res = supabase.table("notas_estudantes").select("disciplina_id, nota").eq("estudante_id", estudante_id).in_("disciplina_id", disciplinas_ids).execute()
+        notas = notas_res.data
+
+        # 5. Verificar se o estudante tem nota mínima em todas as disciplinas exigidas
+        # Se faltar alguma disciplina ou nota for menor que a mínima, não passa
+        notas_dict = {n["disciplina_id"]: n["nota"] for n in notas}
+        atende = all(notas_dict.get(did, 0) >= nota_minima for did in disciplinas_ids)
+
+        if atende:
+            vagas_filtradas.append(vaga)
+
+    return vagas_filtradas
+
+###########################################
 def logout():
     st.session_state.user = None
     st.session_state.user_type = None
@@ -138,10 +178,10 @@ else:
                     st.error(f"Erro ao atualizar dados: {e}")
 
         elif aba == "Vagas Disponíveis":
-            curso_id = user.get("curso_id")
-            vagas = supabase.table("vagas").select("id, titulo, descricao, curso_id").eq("curso_id", curso_id).execute()
-            if vagas.data:
-                for vaga in vagas.data:
+            vagas_filtradas = vagas_disponiveis_para_estudante(supabase, user_id)
+        
+            if vagas_filtradas:
+                for vaga in vagas_filtradas:
                     st.markdown(f"### {vaga['titulo']}")
                     st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}")
                     if st.button(f"Candidatar-se à vaga: {vaga['titulo']}", key=vaga['id']):
@@ -155,7 +195,7 @@ else:
                         except Exception as e:
                             st.error(f"Erro ao se candidatar: {e}")
             else:
-                st.info("Nenhuma vaga disponível para seu curso no momento.")
+                st.info("Nenhuma vaga disponível para seu curso que atenda aos seus critérios de nota.")
 
     elif st.session_state.user_type == 'empresa':
         user = st.session_state.user
