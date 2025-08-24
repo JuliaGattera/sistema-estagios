@@ -127,19 +127,19 @@ if st.session_state.user is None:
         st.subheader("Login de Usuário")
         email = st.text_input("Email")
         senha = st.text_input("Senha", type="password")
-
+        #
         if st.button("Entrar"):
             try:
                 user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
                 user_id = user.user.id
-
+        
                 # Verifica se é estudante
                 estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
                 if estudante.data:
                     st.session_state.user = estudante.data[0]
                     st.session_state.user_type = 'estudante'
                     st.experimental_rerun()
-
+        
                 else:
                     # Verifica se é empresa
                     empresa = supabase.table("empresas").select("*").eq("user_id", user_id).execute()
@@ -148,8 +148,14 @@ if st.session_state.user is None:
                         st.session_state.user_type = 'empresa'
                         st.experimental_rerun()
                     else:
-                        st.warning("Usuário não identificado como estudante nem empresa.")
-
+                        # Verifica se é admin pelo e-mail
+                        if email == "admin@admin.com":
+                            st.session_state.user = {"email": email}
+                            st.session_state.user_type = 'admin'
+                            st.experimental_rerun()
+                        else:
+                            st.warning("Usuário não identificado como estudante, empresa ou admin.")
+        
             except Exception as e:
                 st.error(f"Erro no login: {e}")
 
@@ -206,3 +212,47 @@ else:
             logout()
         # Aqui você pode montar o painel da empresa
 
+    #abaixo o painel do admin    
+    elif st.session_state.user_type == 'admin':
+        st.success(f"Login como Administrador realizado com sucesso! Bem-vindo, {st.session_state.user['email']}")
+        if st.button("Logout"):
+            logout()
+        
+        # Menu simples para o admin
+        aba_admin = st.radio("Menu do Administrador", [
+            "Gerenciar Cursos", 
+            "Gerenciar Disciplinas", 
+            "Gerenciar Estudantes", 
+            "Gerenciar Empresas", 
+            "Gerenciar Vagas"
+        ])
+    
+        if aba_admin == "Gerenciar Cursos":
+            st.subheader("Cadastro de Cursos")
+            nome_curso = st.text_input("Nome do Curso")
+            if st.button("Adicionar Curso"):
+                if nome_curso.strip() == "":
+                    st.warning("Informe o nome do curso.")
+                else:
+                    try:
+                        supabase.table("cursos").insert({"nome": nome_curso}).execute()
+                        st.success(f"Curso '{nome_curso}' adicionado com sucesso!")
+                    except Exception as e:
+                        st.error(f"Erro ao adicionar curso: {e}")
+    
+        elif aba_admin == "Gerenciar Disciplinas":
+            st.subheader("Gerenciar Disciplinas")
+            # Aqui você pode expandir com lista, cadastro etc.
+            st.info("Funcionalidade a implementar.")
+    
+        elif aba_admin == "Gerenciar Estudantes":
+            st.subheader("Gerenciar Estudantes")
+            st.info("Funcionalidade a implementar.")
+    
+        elif aba_admin == "Gerenciar Empresas":
+            st.subheader("Gerenciar Empresas")
+            st.info("Funcionalidade a implementar.")
+    
+        elif aba_admin == "Gerenciar Vagas":
+            st.subheader("Gerenciar Vagas")
+            st.info("Funcionalidade a implementar.")
