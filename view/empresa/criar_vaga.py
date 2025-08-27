@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from controller.email_controller import notificar_estudante_por_email
+from controller.vagas_controller import selecionar_estudantes_para_vaga
 
 def criar_vaga(supabase, user):
     st.subheader("Nova Vaga")
@@ -35,7 +36,7 @@ def criar_vaga(supabase, user):
             prazo = datetime.utcnow() + timedelta(days=3)
 
             # Lógica para pegar estudantes com maiores médias (igual antes)...
-
+            estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade)
             # Exemplo simplificado:
             estudantes_ordenados = [...]  # sua lista já calculada
 
