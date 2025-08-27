@@ -65,7 +65,7 @@ def show_estudante_panel(supabase, logout_func):
                     try:
                         supabase.table("log_vinculos_estudantes_vagas").update({
                             "status": "recusado",
-                            "data_atualizacao": datetime.utcnow().isoformat()
+                            "data_vinculo": datetime.utcnow().isoformat()
                         }).eq("id", vinculo["id"]).execute()
                         st.success("Você desistiu da vaga.")
                         st.experimental_rerun()
