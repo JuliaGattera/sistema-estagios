@@ -38,7 +38,6 @@ def criar_vaga(supabase, user):
             # Lógica para pegar estudantes com maiores médias (igual antes)...
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade)
             # Exemplo simplificado:
-            estudantes_ordenados = [...]  # sua lista já calculada
 
             enviados = 0
             for estudante_id, media in estudantes_ordenados:
