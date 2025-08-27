@@ -38,6 +38,7 @@ Você foi selecionado para participar do processo seletivo da vaga '{vaga_info['
 Detalhes da vaga:
 Título: {vaga_info['titulo']}
 Descrição: {vaga_info.get('descricao', 'Sem descrição disponível')}
+Contato da empresa: {empresa_info.get('email', 'Não informado')}
 Prazo para resposta: {prazo_resposta.strftime('%d/%m/%Y %H:%M UTC')}
 
 Acesse o sistema para aceitar ou recusar a vaga.
