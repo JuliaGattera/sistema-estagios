@@ -6,10 +6,26 @@ from controller.vagas_controller import selecionar_estudantes_para_vaga
 def criar_vaga(supabase, user):
     st.subheader("Nova Vaga")
 
-    # ... seu código normal para pegar inputs e criar vaga ...
+    # Captura os inputs do usuário
+    titulo = st.text_input("Título da vaga")
+    descricao = st.text_area("Descrição")
+    quantidade = st.number_input("Quantidade de vagas", min_value=1, value=1)
+
+    cursos_res = supabase.table("cursos").select("id, nome").execute()
+    cursos = cursos_res.data
+    curso_nomes = [c["nome"] for c in cursos]
+    curso_selecionado = st.selectbox("Curso", curso_nomes)
+    curso_id = next((c["id"] for c in cursos if c["nome"] == curso_selecionado), None)
+
+    disciplinas_res = supabase.table("disciplinas").select("id, nome").eq("curso_id", curso_id).execute()
+    disciplinas = disciplinas_res.data
+    nomes_disciplinas = [d["nome"] for d in disciplinas]
+    disciplinas_selecionadas = st.multiselect("Disciplinas exigidas", nomes_disciplinas)
 
     if st.button("Publicar Vaga"):
-        # Validação e inserção da vaga + disciplinas
+        if not titulo or not curso_id:
+            st.warning("Preencha todos os campos obrigatórios.")
+            return
 
         try:
             vaga_insert = supabase.table("vagas").insert({
@@ -32,19 +48,15 @@ def criar_vaga(supabase, user):
 
             st.success("Vaga publicada com sucesso!")
 
-            # Definir prazo para resposta
             prazo = datetime.utcnow() + timedelta(days=3)
 
-            # Lógica para pegar estudantes com maiores médias (igual antes)...
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade)
-            # Exemplo simplificado:
 
             enviados = 0
             for estudante_id, media in estudantes_ordenados:
                 if enviados >= quantidade:
                     break
 
-                # Inserir no log
                 supabase.table("log_vinculos_estudantes_vagas").insert({
                     "estudante_id": estudante_id,
                     "vaga_id": vaga_id,
@@ -52,12 +64,11 @@ def criar_vaga(supabase, user):
                     "prazo_resposta": prazo.isoformat()
                 }).execute()
 
-                # Chamar função do controller para notificar
                 sucesso, erro = notificar_estudante_por_email(
                     supabase,
                     estudante_id,
                     {"titulo": titulo, "descricao": descricao},
-                    {"nome": user["nome"]},
+                    {"nome": user.get("nome", "Empresa")},
                     prazo,
                     st.secrets["email"]["user"],
                     st.secrets["email"]["password"]
