@@ -1,6 +1,5 @@
 import streamlit as st
-from datetime import datetime
-
+from datetime import datetime, timezone
 def show_estudante_panel(supabase, logout_func):
     user = st.session_state.user
     st.success(f"Login como Estudante realizado com sucesso! Bem-vindo, {user['nome']}")
@@ -42,7 +41,7 @@ def show_estudante_panel(supabase, logout_func):
                 prazo_str = vinculo.get("prazo_resposta")
                 if prazo_str:
                     prazo = datetime.fromisoformat(prazo_str.replace("Z", "+00:00"))
-                    if datetime.utcnow() > prazo:
+                    if datetime.now(timezone.utc) > prazo:
                         continue  # Ignora vaga expirada
                 else:
                     continue  # Sem prazo, ignora
