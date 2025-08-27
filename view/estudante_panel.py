@@ -60,11 +60,11 @@ def show_estudante_panel(supabase, logout_func):
                 st.markdown(f"### 📌 {vaga['titulo']}")
                 st.markdown(vaga.get("descricao", "Sem descrição disponível."))
                 st.markdown(f"📅 Prazo para resposta: `{prazo.strftime('%d/%m/%Y %H:%M UTC')}`")
-
+                #
                 if st.button(f"Desistir desta vaga", key=f"desistir_{vaga_id}"):
                     try:
                         supabase.table("log_vinculos_estudantes_vagas").update({
-                            "status": "recusado",
+                            "status": "desistente",
                             "data_vinculo": datetime.utcnow().isoformat()
                         }).eq("id", vinculo["id"]).execute()
                         st.success("Você desistiu da vaga.")
