@@ -63,15 +63,13 @@ def criar_vaga(supabase, user):
                     "status": "notificado",
                     "prazo_resposta": prazo.isoformat()
                 }).execute()
-
+                #
                 sucesso, erro = notificar_estudante_por_email(
                     supabase,
                     estudante_id,
                     {"titulo": titulo, "descricao": descricao},
-                    {"nome": user.get("nome", "Empresa")},
-                    prazo,
-                    st.secrets["email"]["user"],
-                    st.secrets["email"]["password"]
+                    {"nome": user["nome"], "email": user["email"]},
+                    prazo
                 )
 
                 if sucesso:
