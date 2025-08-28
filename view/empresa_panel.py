@@ -1,6 +1,6 @@
 import streamlit as st
 from view.empresa.criar_vaga import criar_vaga
-from view.empresa.listar_vagas_com_candidatos import listar_vagas_com_candidatos  # teu cuImport atualizado
+from view.empresa.listar_vagas import listar_vagas_com_candidatos  # teu cuImport atualizado
 
 def show_empresa_panel(supabase, logout_fn):
     user = st.session_state.user
