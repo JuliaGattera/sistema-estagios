@@ -1,6 +1,6 @@
 import streamlit as st
 from view.empresa.criar_vaga import criar_vaga
-from view.empresa.listar_vagas import listar_vagas
+from view.empresa.listar_vagas import listar_vagas_com_candidatos
 from view.empresa.candidatos import candidatos_vagas
 
 def show_empresa_panel(supabase, logout_fn):
@@ -21,7 +21,7 @@ def show_empresa_panel(supabase, logout_fn):
         criar_vaga(supabase, user)
 
     elif aba == "Minhas Vagas":
-        listar_vagas(supabase, user)
+        listar_vagas_com_candidatos(supabase, user)
 
     elif aba == "Candidatos às Vagas":
         candidatos_vagas(supabase, user)
