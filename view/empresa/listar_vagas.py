@@ -67,7 +67,23 @@ def listar_vagas_com_candidatos(supabase, user):
                             supabase.table("log_vinculos_estudantes_vagas") \
                                 .update({"status": "contratado"}) \
                                 .eq("id", entrada["id"]).execute()
-                            st.success(f"{nome} foi marcado como contratado.")
+
+                            # Enviar email de contratação
+                            from controller.email_controller import enviar_email
+                            assunto = "Parabéns! Você foi contratado"
+                            corpo = f"""
+Olá {nome},
+
+Temos o prazer de informar que você foi contratado para a vaga '{vaga['titulo']}'.
+
+Parabéns e sucesso na sua nova etapa!
+
+Atenciosamente,
+Sistema de Estágios
+"""
+                            enviar_email(email, assunto, corpo)
+
+                            st.success(f"{nome} foi marcado como contratado e notificado por email.")
                             st.experimental_rerun()
                         except Exception as e:
                             st.error(f"Erro ao contratar: {e}")
@@ -88,7 +104,7 @@ def listar_vagas_com_candidatos(supabase, user):
                                         .update({"status": "recusado"}) \
                                         .eq("id", entrada["id"]).execute()
 
-                                    # Envia email com justificativa (opcional: implementar no controller)
+                                    # Envia email com justificativa
                                     from controller.email_controller import enviar_email
                                     assunto = "Atualização sobre sua candidatura"
                                     corpo = f"""
@@ -107,7 +123,7 @@ Atenciosamente,
 Sistema de Estágios
 """
                                     enviar_email(email, assunto, corpo)
-                                    st.success(f"{nome} foi recusado com justificativa.")
+                                    st.success(f"{nome} foi recusado com justificativa e notificado por email.")
                                     st.experimental_rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
