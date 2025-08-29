@@ -124,6 +124,11 @@ Sistema de Estágios
 """
                                     enviar_email(email, assunto, corpo)
                                     st.success(f"{nome} foi recusado com justificativa e notificado por email.")
+                                    
+                                    # Importar e chamar a função que chama novos estudantes automaticamente
+                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
+                                    chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
+                                    
                                     st.experimental_rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
