@@ -49,9 +49,10 @@ def criar_vaga(supabase, user):
             st.success("Vaga publicada com sucesso!")
 
             prazo = datetime.utcnow() + timedelta(days=3)
-
-            estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade)
-
+            #
+            # selecionar o dobro da quantidade para ter candidatos reservas
+            estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade * 2)
+            
             enviados = 0
             for estudante_id, media in estudantes_ordenados:
                 if enviados >= quantidade:
