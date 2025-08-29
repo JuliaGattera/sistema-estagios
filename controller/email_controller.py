@@ -1,33 +1,23 @@
+import os
+from mailersend import MailerSend, Message
 from datetime import datetime
-import streamlit as st
-from mailersend import MailerSendClient, EmailBuilder
-from mailersend.exceptions import MailerSendError
+
+# Pega as variáveis do ambiente
+API_KEY = os.getenv("MAILERSEND_API_KEY")
+FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL")
+FROM_NAME = os.getenv("MAILERSEND_FROM_NAME")
+
+client = MailerSend(api_key=API_KEY)
 
 def enviar_email(destinatario, assunto, corpo):
-    # Inicializa o cliente com API key do secrets
-    ms = MailerSendClient(api_key=st.secrets["mailersend"]["api_key"])
-    
-    # Constrói o e-mail
-    email = (EmailBuilder()
-             .from_email(
-                 st.secrets["mailersend"]["from_email"],
-                 st.secrets["mailersend"]["from_name"]
-             )
-             .to_many([{"email": destinatario}])
-             .subject(assunto)
-             .text(corpo)
-             .build())
-    try:
-        # Envia o e-mail
-        ms.emails.send(email)
-        return True, None
-    except MailerSendError as e:
-        # Captura erros específicos da API
-        st.error(f"MailerSend API Error: {e}")
-        return False, str(e)
-    except Exception as e:
-        st.error(f"Erro inesperado ao enviar e-mail: {e}")
-        return False, str(e)
+    message = Message(
+        from_email={"email": FROM_EMAIL, "name": FROM_NAME},
+        to=[{"email": destinatario}],
+        subject=assunto,
+        text=corpo,
+    )
+    response = client.send(message)
+    return response
 
 def notificar_estudante_por_email(supabase, estudante_id, vaga_info, empresa_info, prazo_resposta):
     estudante_res = supabase.table("estudantes").select("email, nome").eq("id", estudante_id).execute()
@@ -48,7 +38,6 @@ Detalhes da vaga:
 Título: {vaga_info['titulo']}
 Descrição: {vaga_info.get('descricao', 'Sem descrição disponível')}
 Contato da empresa: {empresa_info.get('email', 'Não informado')}
-
 Prazo para resposta: {prazo_resposta.strftime('%d/%m/%Y %H:%M UTC')}
 
 Acesse o sistema para aceitar ou recusar a vaga.
@@ -59,4 +48,8 @@ Atenciosamente,
 Equipe de Estágios
 """
 
-    return enviar_email(email_estudante, assunto, corpo)
+    try:
+        enviar_email(email_estudante, assunto, corpo)
+        return True, None
+    except Exception as e:
+        return False, str(e)
