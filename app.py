@@ -1,4 +1,5 @@
 import streamlit as st
+st.write("Streamlit versão:", st.__version__)
 from supabase_client import supabase
 from view.login import show_login_screen
 from view.admin_panel import show_admin_panel
