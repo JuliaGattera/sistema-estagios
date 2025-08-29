@@ -72,7 +72,7 @@ def show_login_screen(supabase):
                 if email == "admin@admin.com":
                     st.session_state.user = {"email": email}
                     st.session_state.user_type = 'admin'
-                    st.experimental_rerun()
+                    st.rerun()
 
                 estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
                 if estudante.data:
