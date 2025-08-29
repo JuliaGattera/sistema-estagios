@@ -28,7 +28,6 @@ def criar_vaga(supabase, user):
             return
 
         try:
-            #
             # Verificar se já existe vaga com mesmos dados
             vaga_existente = supabase.table("vagas") \
                 .select("id") \
@@ -63,22 +62,18 @@ def criar_vaga(supabase, user):
             st.success("Vaga publicada com sucesso!")
 
             prazo = datetime.utcnow() + timedelta(days=3)
-            #
-            # selecionar o dobro da quantidade para ter candidatos reservas
+            # Selecionar o dobro da quantidade para ter candidatos reservas
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade * 2)
             
             enviados = 0
             for estudante_id, media in estudantes_ordenados:
-                if enviados >= quantidade:
-                    break
-
                 supabase.table("log_vinculos_estudantes_vagas").insert({
                     "estudante_id": estudante_id,
                     "vaga_id": vaga_id,
                     "status": "notificado",
                     "prazo_resposta": prazo.isoformat()
                 }).execute()
-                #
+
                 sucesso, erro = notificar_estudante_por_email(
                     supabase,
                     estudante_id,
