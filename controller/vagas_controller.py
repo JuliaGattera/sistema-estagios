@@ -100,7 +100,7 @@ def chamar_proximos_estudantes_disponiveis(supabase, vaga_id):
     # Selecionar candidatos elegíveis
     candidatos = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade=faltam_chamar)
     candidatos_a_chamar = [(eid, media) for (eid, media) in candidatos if eid not in ja_chamados_ids]
-
+    st.write(f"[DEBUG] Candidatos elegíveis encontrados para chamar: {len(candidatos_a_chamar)}")
     for estudante_id, _ in candidatos_a_chamar:
         prazo_resposta = datetime.now(tz=timezone.utc) + timedelta(days=2)
 
