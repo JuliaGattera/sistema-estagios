@@ -2,6 +2,7 @@ import os
 from mailersend import MailerSendClient, EmailBuilder
 from mailersend.exceptions import MailerSendError
 from datetime import datetime
+import time
 
 # Pega as variáveis do ambiente
 API_KEY = os.getenv("MAILERSEND_API_KEY")
@@ -10,7 +11,13 @@ FROM_NAME = os.getenv("MAILERSEND_FROM_NAME")
 
 client = MailerSendClient(api_key=API_KEY)
 
+import time
+
+import time
+
 def enviar_email(destinatario, assunto, corpo):
+    delay_segundos = 2  # tempo fixo de delay em segundos
+    
     try:
         email = (
             EmailBuilder()
@@ -22,6 +29,9 @@ def enviar_email(destinatario, assunto, corpo):
         )
 
         client.emails.send(email)
+        
+        time.sleep(delay_segundos)  # espera fixo antes de retornar
+        
         return True, None
 
     except MailerSendError as e:
