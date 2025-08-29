@@ -1,32 +1,29 @@
 from datetime import datetime
-from mailersend import emails
+from mailersend import MailerSend
 import streamlit as st
 
 def enviar_email(destinatario, assunto, corpo):
-    mailer = emails.NewEmail()
-    
-    mailer.set_api_key(st.secrets["mailersend"]["api_token"])
+    ms = MailerSend(api_key=st.secrets["mailersend"]["api_token"])
 
-    mailer.set_from({
-        "email": st.secrets["mailersend"]["sender_email"],
-        "name": st.secrets["mailersend"]["sender_name"]
-    })
-
-    mailer.set_to([{
-        "email": destinatario
-    }])
-
-    mailer.set_subject(assunto)
-    mailer.set_text_content(corpo)
+    mail_data = {
+        "from": {
+            "email": st.secrets["mailersend"]["sender_email"],
+            "name": st.secrets["mailersend"]["sender_name"]
+        },
+        "to": [{
+            "email": destinatario
+        }],
+        "subject": assunto,
+        "text": corpo
+    }
 
     try:
-        mailer.send()
+        ms.send(mail_data)
     except Exception as e:
         st.error(f"Erro ao enviar e-mail: {e}")
         raise
 
 def notificar_estudante_por_email(supabase, estudante_id, vaga_info, empresa_info, prazo_resposta):
-    # Buscar dados do estudante
     estudante_res = supabase.table("estudantes").select("email, nome").eq("id", estudante_id).execute()
     if not estudante_res.data:
         return False, "Estudante não encontrado."
@@ -55,7 +52,6 @@ Atenciosamente,
 Equipe de Estágios
 """
 
-    # Enviar o email
     try:
         enviar_email(email_estudante, assunto, corpo)
         return True, None
