@@ -1,23 +1,29 @@
-import smtplib
-from email.message import EmailMessage
 from datetime import datetime
+from mailersend import emails
 import streamlit as st
 
-
 def enviar_email(destinatario, assunto, corpo):
-    email_user = st.secrets["email"]["user"]
-    email_password = st.secrets["email"]["password"]
+    mailer = emails.NewEmail()
+    
+    mailer.set_api_key(st.secrets["mailersend"]["api_token"])
 
-    email = EmailMessage()
-    email['Subject'] = assunto
-    email['From'] = email_user
-    email['To'] = destinatario
-    email.set_content(corpo)
+    mailer.set_from({
+        "email": st.secrets["mailersend"]["sender_email"],
+        "name": st.secrets["mailersend"]["sender_name"]
+    })
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(email_user, email_password)
-        smtp.send_message(email)
+    mailer.set_to([{
+        "email": destinatario
+    }])
 
+    mailer.set_subject(assunto)
+    mailer.set_text_content(corpo)
+
+    try:
+        mailer.send()
+    except Exception as e:
+        st.error(f"Erro ao enviar e-mail: {e}")
+        raise
 
 def notificar_estudante_por_email(supabase, estudante_id, vaga_info, empresa_info, prazo_resposta):
     # Buscar dados do estudante
