@@ -8,17 +8,26 @@ API_KEY = os.getenv("MAILERSEND_API_KEY")
 FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL")
 FROM_NAME = os.getenv("MAILERSEND_FROM_NAME")
 
-client = MailerSend(api_key=API_KEY)
+client = MailerSendClient(api_key=API_KEY)
 
 def enviar_email(destinatario, assunto, corpo):
-    message = Message(
-        from_email={"email": FROM_EMAIL, "name": FROM_NAME},
-        to=[{"email": destinatario}],
-        subject=assunto,
-        text=corpo,
-    )
-    response = client.send(message)
-    return response
+    try:
+        email = (
+            EmailBuilder()
+            .from_email(FROM_EMAIL, FROM_NAME)
+            .to_many([{"email": destinatario}])
+            .subject(assunto)
+            .text(corpo)
+            .build()
+        )
+
+        client.emails.send(email)
+        return True, None
+
+    except MailerSendError as e:
+        return False, str(e)
+    except Exception as e:
+        return False, str(e)
 
 def notificar_estudante_por_email(supabase, estudante_id, vaga_info, empresa_info, prazo_resposta):
     estudante_res = supabase.table("estudantes").select("email, nome").eq("id", estudante_id).execute()
