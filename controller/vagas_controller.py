@@ -72,3 +72,54 @@ def vagas_disponiveis_para_estudante(supabase, user_id: str, nota_minima=7.0):
 
     return vagas_filtradas
 
+from datetime import datetime, timedelta
+from controller.email_controller import notificar_estudante_por_email
+
+def chamar_proximos_estudantes_disponiveis(supabase, vaga_id):
+    # Buscar vaga
+    vaga_res = supabase.table("vagas").select("*").eq("id", vaga_id).execute()
+    if not vaga_res.data:
+        return
+
+    vaga = vaga_res.data[0]
+    quantidade_maxima = vaga.get("quantidade", 1) * 2
+
+    # Ver quantos estudantes já foram notificados ou contratados
+    log_res = supabase.table("log_vinculos_estudantes_vagas") \
+        .select("id, estudante_id, status") \
+        .eq("vaga_id", vaga_id).execute()
+
+    log_data = log_res.data or []
+    ja_chamados_ids = {r["estudante_id"] for r in log_data if r["status"] in ["notificado", "contratado"]}
+
+    if len(ja_chamados_ids) >= quantidade_maxima:
+        return  # já atingiu o limite
+
+    faltam_chamar = quantidade_maxima - len(ja_chamados_ids)
+
+    # Selecionar candidatos elegíveis
+    candidatos = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade=faltam_chamar)
+    candidatos_a_chamar = [(eid, media) for (eid, media) in candidatos if eid not in ja_chamados_ids]
+
+    for estudante_id, _ in candidatos_a_chamar:
+        prazo_resposta = datetime.now(tz=timezone.utc) + timedelta(days=2)
+
+        # Evita duplicidade
+        try:
+            supabase.table("log_vinculos_estudantes_vagas").insert({
+                "vaga_id": vaga_id,
+                "estudante_id": estudante_id,
+                "status": "notificado",
+                "prazo_resposta": prazo_resposta.isoformat()
+            }).execute()
+        except Exception as insert_err:
+            continue  # já foi chamado anteriormente, provavelmente por chave única
+
+        # Buscar info da empresa
+        empresa_res = supabase.table("empresas").select("*").eq("id", vaga["empresa_id"]).execute()
+        empresa = empresa_res.data[0] if empresa_res.data else {}
+
+        # Enviar e-mail
+        notificar_estudante_por_email(supabase, estudante_id, vaga, empresa, prazo_resposta)
+
+
