@@ -68,27 +68,31 @@ def criar_vaga(supabase, user):
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade * 2)
             
             enviados = 0
-enviados = 0
+            for estudante_id, media in estudantes_ordenados:
+                if enviados >= quantidade:
+                    break
 
-for estudante_id, media in estudantes_ordenados:
-    supabase.table("log_vinculos_estudantes_vagas").insert({
-        "estudante_id": estudante_id,
-        "vaga_id": vaga_id,
-        "status": "notificado",
-        "prazo_resposta": prazo.isoformat()
-    }).execute()
+                supabase.table("log_vinculos_estudantes_vagas").insert({
+                    "estudante_id": estudante_id,
+                    "vaga_id": vaga_id,
+                    "status": "notificado",
+                    "prazo_resposta": prazo.isoformat()
+                }).execute()
+                #
+                sucesso, erro = notificar_estudante_por_email(
+                    supabase,
+                    estudante_id,
+                    {"titulo": titulo, "descricao": descricao},
+                    {"nome": user["nome"], "email": user["email"]},
+                    prazo
+                )
 
-    sucesso, erro = notificar_estudante_por_email(
-        supabase,
-        estudante_id,
-        {"titulo": titulo, "descricao": descricao},
-        {"nome": user["nome"], "email": user["email"]},
-        prazo
-    )
+                if sucesso:
+                    enviados += 1
+                else:
+                    st.error(f"Erro enviando email para estudante {estudante_id}: {erro}")
 
-    if sucesso:
-        enviados += 1
-    else:
-        st.error(f"Erro enviando email para estudante {estudante_id}: {erro}")
+            st.success(f"E-mails enviados para {enviados} estudantes.")
 
-st.success(f"E-mails enviados para {enviados} estudantes.")
+        except Exception as e:
+            st.error(f"Erro ao criar vaga e notificar estudantes: {e}")
