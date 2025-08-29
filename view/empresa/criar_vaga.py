@@ -28,6 +28,20 @@ def criar_vaga(supabase, user):
             return
 
         try:
+            #
+            # Verificar se já existe vaga com mesmos dados
+            vaga_existente = supabase.table("vagas") \
+                .select("id") \
+                .eq("empresa_id", user["id"]) \
+                .eq("titulo", titulo) \
+                .eq("descricao", descricao) \
+                .eq("curso_id", curso_id) \
+                .execute()
+            
+            if vaga_existente.data:
+                st.warning("Já existe uma vaga com os mesmos dados. Evite duplicações.")
+                return
+            
             vaga_insert = supabase.table("vagas").insert({
                 "empresa_id": user["id"],
                 "titulo": titulo,
