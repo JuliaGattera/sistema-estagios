@@ -1,5 +1,6 @@
 import os
-from mailersend import MailerSend, Message
+from mailersend import MailerSendClient, EmailBuilder
+from mailersend.exceptions import MailerSendError
 from datetime import datetime
 
 # Pega as variáveis do ambiente
