@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 def listar_vagas_com_candidatos(supabase, user):
     st.subheader("Minhas Vagas e Candidatos")
@@ -51,6 +51,8 @@ def listar_vagas_com_candidatos(supabase, user):
             email = estudante["email"]
             status = entrada["status"]
             prazo_str = entrada.get("prazo_resposta")
+            
+            # Verifica o prazo e faz a conversão correta para datetime
             prazo = datetime.fromisoformat(prazo_str.replace("Z", "+00:00")) if prazo_str else None
 
             col1, col2 = st.columns([3, 2])
