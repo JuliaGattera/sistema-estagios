@@ -84,7 +84,7 @@ Sistema de Estágios
                             enviar_email(email, assunto, corpo)
 
                             st.success(f"{nome} foi marcado como contratado e notificado por email.")
-                            st.experimental_rerun()
+                            st.rerun()
                         except Exception as e:
                             st.error(f"Erro ao contratar: {e}")
 
@@ -129,6 +129,6 @@ Sistema de Estágios
                                     from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
                                     chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
                                     
-                                    st.experimental_rerun()
+                                    st.rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
