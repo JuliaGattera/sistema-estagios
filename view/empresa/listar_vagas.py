@@ -70,6 +70,9 @@ def listar_vagas_com_candidatos(supabase, user):
                                 .update({"status": "contratado"}) \
                                 .eq("id", entrada["id"]).execute()
 
+                            from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
+                            chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
+                            
                             from controller.email_controller import enviar_email
                             assunto = "Parabéns! Você foi contratado"
                             corpo = f"""
