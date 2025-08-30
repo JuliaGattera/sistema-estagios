@@ -21,7 +21,7 @@ def listar_vagas_com_candidatos(supabase, user):
             try:
                 supabase.table("vagas").delete().eq("id", vaga["id"]).execute()
                 st.success("Vaga cancelada com sucesso.")
-                st.experimental_rerun()
+                st.rerun()
             except Exception as e:
                 st.error(f"Erro ao cancelar a vaga: {e}")
             continue
