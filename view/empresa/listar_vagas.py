@@ -112,17 +112,17 @@ Sistema de Estágios
                                     st.success(f"{nome} foi recusado com justificativa.")
 
                                     # Atualiza a lista chamando próximos estudantes antes de enviar o email
-                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv2
-                                    estudantes_ordenados =chamar_proximos_estudantes_disponiveisv2(supabase, vaga['id'],1)
+                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
+                                    estudantes_ordenados =chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
 
-                                    enviados = 0
-                                    for estudante_id, media in estudantes_ordenados:
-                                        supabase.table("log_vinculos_estudantes_vagas").insert({
-                                            "estudante_id": estudante_id,
-                                            "vaga_id": vaga['id'],
-                                            "status": "notificado",
-                                            "prazo_resposta": prazo.isoformat()
-                                        }).execute()
+                                    #enviados = 0
+                                    #for estudante_id, media in estudantes_ordenados:
+                                    #    supabase.table("log_vinculos_estudantes_vagas").insert({
+                                    #        "estudante_id": estudante_id,
+                                    #        "vaga_id": vaga['id'],
+                                    #        "status": "notificado",
+                                    #        "prazo_resposta": prazo.isoformat()
+                                    #    }).execute()
 
                                     
                                     # Tenta enviar email informando a recusa
