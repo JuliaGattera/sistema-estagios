@@ -68,7 +68,7 @@ def show_estudante_panel(supabase, logout_func):
                             "data_vinculo": datetime.utcnow().isoformat()
                         }).eq("id", vinculo["id"]).execute()
                         st.success("Você desistiu da vaga.")
-                        st.experimental_rerun()
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Erro ao desistir da vaga: {e}")
 
