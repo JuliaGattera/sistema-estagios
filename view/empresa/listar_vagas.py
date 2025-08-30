@@ -119,7 +119,7 @@ Sistema de Estágios
                                     for estudante_id, media in estudantes_ordenados:
                                         supabase.table("log_vinculos_estudantes_vagas").insert({
                                             "estudante_id": estudante_id,
-                                            "vaga_id": vaga_id,
+                                            "vaga_id": vaga['id'],
                                             "status": "notificado",
                                             "prazo_resposta": prazo.isoformat()
                                         }).execute()
