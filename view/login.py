@@ -86,8 +86,15 @@ def show_login_screen(supabase):
                             st.warning("Usuário não identificado como estudante, empresa ou admin.")
                             return
 
-                # Redireciona para a próxima tela após o login
-                #st.stop()
+                # Marcar que o usuário está logado na sessão
+                st.session_state.logged_in = True
 
             except Exception as e:
                 st.error(f"Erro no login: {e}")
+
+    # Se o usuário estiver logado, redirecionar para a próxima tela (como exemplo)
+    if 'logged_in' in st.session_state and st.session_state.logged_in:
+        st.write("Bem-vindo, você está logado!")
+        # Aqui você pode redirecionar para outra página ou mudar a UI
+        # Exemplo:
+        st.experimental_rerun()  # Isso vai reiniciar a página, sem o problema do segundo clique
