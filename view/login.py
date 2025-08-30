@@ -101,12 +101,13 @@ def show_login_screen(supabase):
                 else:
                     st.write("Bem-vindo, Empresa!")
 
+                # Para reiniciar a página após o login e fazer o redirecionamento corretamente
+                st.rerun()
+
             except Exception as e:
                 st.error(f"Erro no login: {e}")
 
     # Se o usuário estiver logado, redirecionar para a próxima tela (como exemplo)
     if 'logged_in' in st.session_state and st.session_state.logged_in:
-        # Remover o 'st.experimental_rerun()' aqui
-        # Com isso, a página não será recarregada automaticamente, evitando o segundo clique
         st.write("Você está logado com sucesso!")
 
