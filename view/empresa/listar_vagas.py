@@ -103,16 +103,22 @@ Sistema de Estágios
                                 st.warning("Escreva uma justificativa antes de recusar.")
                             else:
                                 try:
-                                    # Atualiza status
+                                    # Atualiza status para recusado
                                     supabase.table("log_vinculos_estudantes_vagas") \
                                         .update({"status": "recusado"}) \
-                                        .eq("id", entrada["id"]).execute()
+                                        .eq("id", entrada["id"]) \
+                                        .execute()
 
                                     st.success(f"{nome} foi recusado com justificativa.")
 
-                                    # Tenta enviar email separadamente
+                                    # Atualiza a lista chamando próximos estudantes antes de enviar o email
+                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
+                                    chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
+
+                                    # Tenta enviar email informando a recusa
                                     try:
                                         from controller.email_controller import enviar_email
+
                                         assunto = "Atualização sobre sua candidatura"
                                         corpo = f"""
 Olá {nome},
@@ -129,15 +135,14 @@ Desejamos sucesso em suas próximas candidaturas.
 Atenciosamente,  
 Sistema de Estágios
 """
+
                                         enviar_email(email, assunto, corpo)
                                         st.info("Email de recusa enviado.")
                                     except Exception as email_err:
                                         st.warning(f"⚠️ Email não foi enviado: {email_err}")
 
-                                    # Chamar próximo estudante
-                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
-                                    chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
-
+                                    # Atualiza a página para refletir as mudanças
                                     st.rerun()
+
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
