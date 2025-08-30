@@ -16,7 +16,7 @@ if 'user_type' not in st.session_state:
 def logout():
     st.session_state.user = None
     st.session_state.user_type = None
-    st.experimental_rerun()
+    st.rerun()
 
 if st.session_state.user is None:
     show_login_screen(supabase)
