@@ -89,15 +89,24 @@ def show_login_screen(supabase):
                 # Marcar que o usuário está logado na sessão
                 st.session_state.logged_in = True
 
-                # Redirecionar automaticamente para a próxima tela
-                st.experimental_rerun()  # Aqui reinicia a página automaticamente
+                # Evitar 'st.experimental_rerun()' aqui diretamente
+                # Navegar ou redirecionar para outra página
+                if st.session_state.user_type == 'admin':
+                    # Exemplo de navegação para o painel do administrador
+                    st.write("Bem-vindo, Admin!")
+                    # Aqui poderia haver o redirecionamento para uma outra página com o painel admin
+                elif st.session_state.user_type == 'estudante':
+                    # Exemplo de navegação para o painel do estudante
+                    st.write("Bem-vindo, Estudante!")
+                else:
+                    st.write("Bem-vindo, Empresa!")
 
             except Exception as e:
                 st.error(f"Erro no login: {e}")
 
     # Se o usuário estiver logado, redirecionar para a próxima tela (como exemplo)
     if 'logged_in' in st.session_state and st.session_state.logged_in:
-        st.write("Bem-vindo, você está logado!")
-        # Aqui você pode redirecionar para outra página ou mudar a UI
-        # Exemplo:
-        st.experimental_rerun()  # Reinicia a página para redirecionar
+        # Remover o 'st.experimental_rerun()' aqui
+        # Com isso, a página não será recarregada automaticamente, evitando o segundo clique
+        st.write("Você está logado com sucesso!")
+
