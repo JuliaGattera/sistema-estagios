@@ -97,4 +97,4 @@ def show_login_screen(supabase):
         st.write("Bem-vindo, você está logado!")
         # Aqui você pode redirecionar para outra página ou mudar a UI
         # Exemplo:
-        st.experimental_rerun()  # Isso vai reiniciar a página, sem o problema do segundo clique
+        st.rerun()  # Usando st.rerun() para reiniciar a página
