@@ -87,7 +87,7 @@ def show_login_screen(supabase):
                             return
 
                 # Redireciona para a próxima tela após o login
-                st.experimental_rerun()
+                st.stop()
 
             except Exception as e:
                 st.error(f"Erro no login: {e}")
