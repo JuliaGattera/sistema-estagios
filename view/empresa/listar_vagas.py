@@ -69,9 +69,21 @@ def listar_vagas_com_candidatos(supabase, user):
                             supabase.table("log_vinculos_estudantes_vagas") \
                                 .update({"status": "contratado"}) \
                                 .eq("id", entrada["id"]).execute()
-
-                            from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
-                            chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
+                    
+                            # Conta quantos já foram contratados para essa vaga
+                            contratados_res = supabase.table("log_vinculos_estudantes_vagas") \
+                                .select("id") \
+                                .eq("vaga_id", vaga['id']) \
+                                .eq("status", "contratado").execute()
+                    
+                            total_contratados = len(contratados_res.data or [])
+                    
+                            if total_contratados < vaga['quantidade']:
+                                from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
+                                chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'], 1)                            
+                            
+                            #from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
+                            #chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
                             
                             from controller.email_controller import enviar_email
                             assunto = "Parabéns! Você foi contratado"
