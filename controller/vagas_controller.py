@@ -258,6 +258,6 @@ def chamar_proximos_estudantes_disponiveisv3(supabase, vaga_id, quantidade):
             "prazo_resposta": prazo.isoformat()
         }).execute()
 
-    return selecionados  # opcional, caso precise retornar
+    #return selecionados  # opcional, caso precise retornar
 
 
