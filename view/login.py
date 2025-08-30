@@ -91,15 +91,15 @@ def show_login_screen(supabase):
 
                 # Evitar 'st.experimental_rerun()' aqui diretamente
                 # Navegar ou redirecionar para outra página
-                if st.session_state.user_type == 'admin':
+                #if st.session_state.user_type == 'admin':
                     # Exemplo de navegação para o painel do administrador
-                    st.write("Bem-vindo, Admin!")
+                    #st.write("Bem-vindo, Admin!")
                     # Aqui poderia haver o redirecionamento para uma outra página com o painel admin
-                elif st.session_state.user_type == 'estudante':
+                #elif st.session_state.user_type == 'estudante':
                     # Exemplo de navegação para o painel do estudante
-                    st.write("Bem-vindo, Estudante!")
-                else:
-                    st.write("Bem-vindo, Empresa!")
+                    #st.write("Bem-vindo, Estudante!")
+                #else:
+                    #st.write("Bem-vindo, Empresa!")
 
                 # Para reiniciar a página após o login e fazer o redirecionamento corretamente
                 st.rerun()
