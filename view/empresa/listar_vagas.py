@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 
 def listar_vagas_com_candidatos(supabase, user):
     st.subheader("Minhas Vagas e Candidatos")
@@ -12,7 +12,7 @@ def listar_vagas_com_candidatos(supabase, user):
     for vaga in vagas:
         st.markdown("---")
         st.markdown(f"### 📌 {vaga['titulo']}")
-        st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}")
+        st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}") 
         st.markdown(f"**Criada em:** `{vaga.get('criada_em', '')}`")
         st.markdown(f"**Quantidade de Vagas:** `{vaga.get('quantidade', 1)}`")
 
