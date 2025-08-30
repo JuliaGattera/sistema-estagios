@@ -135,3 +135,59 @@ def chamar_proximos_estudantes_disponiveis(supabase, vaga_id):
 
         # Enviar e-mail
         notificar_estudante_por_email(supabase, estudante_id, vaga, empresa, prazo_resposta)
+
+def chamar_proximos_estudantes_disponiveisv2(supabase, vaga_id, quantidade):
+    # Buscar info da vaga (curso e disciplinas)
+    vaga_res = supabase.table("vagas").select("curso_id").eq("id", vaga_id).execute()
+    if not vaga_res.data:
+        return []
+
+    curso_id = vaga_res.data[0]["curso_id"]
+
+    # Buscar disciplinas associadas à vaga
+    disciplinas_res = supabase.table("vagas_disciplinas").select("disciplina_id").eq("vaga_id", vaga_id).execute()
+    disciplinas_ids = [d["disciplina_id"] for d in disciplinas_res.data]
+
+    if not disciplinas_ids:
+        return []
+
+    # Buscar estudantes ativos do curso
+    estudantes_res = supabase.table("estudantes").select("id").eq("curso_id", curso_id).eq("ativo", True).execute()
+    estudantes_ids = [e["id"] for e in estudantes_res.data]
+
+    if not estudantes_ids:
+        return []
+
+    # Buscar candidatos que já foram chamados ou contratados (evitar duplicidade)
+    log_res = supabase.table("log_vinculos_estudantes_vagas")\
+        .select("estudante_id", "status")\
+        .eq("vaga_id", vaga_id)\
+        .in_("status", ["notificado", "contratado", "recusado"]).execute()
+
+    ja_chamados_ids = {r["estudante_id"] for r in (log_res.data or [])}
+
+    # Filtra os estudantes que ainda não foram chamados
+    estudantes_ids = [e for e in estudantes_ids if e not in ja_chamados_ids]
+
+    estudantes_medias = []
+
+    for estudante_id in estudantes_ids:
+        # Buscar notas do estudante nas disciplinas exigidas
+        notas_res = supabase.table("notas_estudantes")\
+            .select("nota")\
+            .eq("estudante_id", estudante_id)\
+            .in_("disciplina_id", disciplinas_ids)\
+            .execute()
+
+        notas = [n["nota"] for n in notas_res.data if n["nota"] is not None]
+
+        if notas:
+            media = sum(notas) / len(notas)
+            estudantes_medias.append((estudante_id, media))
+
+    # Ordenar os estudantes pelo desempenho
+    estudantes_medias.sort(key=lambda x: x[1], reverse=True)
+
+    # Retornar a quantidade solicitada de estudantes
+    return estudantes_medias[:quantidade]
+
