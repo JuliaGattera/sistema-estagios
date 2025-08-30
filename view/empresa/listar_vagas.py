@@ -115,6 +115,16 @@ Sistema de Estágios
                                     from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
                                     chamar_proximos_estudantes_disponiveisv2(supabase, vaga['id'],1)
 
+                                    enviados = 0
+                                    for estudante_id, media in estudantes_ordenados:
+                                        supabase.table("log_vinculos_estudantes_vagas").insert({
+                                            "estudante_id": estudante_id,
+                                            "vaga_id": vaga_id,
+                                            "status": "notificado",
+                                            "prazo_resposta": prazo.isoformat()
+                                        }).execute()
+
+                                    
                                     # Tenta enviar email informando a recusa
                                     try:
                                         from controller.email_controller import enviar_email
