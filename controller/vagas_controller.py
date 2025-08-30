@@ -162,7 +162,7 @@ def chamar_proximos_estudantes_disponiveisv2(supabase, vaga_id, quantidade):
     log_res = supabase.table("log_vinculos_estudantes_vagas")\
         .select("estudante_id", "status")\
         .eq("vaga_id", vaga_id)\
-        .in_("status", ["notificado", "contratado", "recusado"]).execute()
+        .in_("status", ["notificado", "contratado", "recusado", "desistente"]).execute()
 
     ja_chamados_ids = {r["estudante_id"] for r in (log_res.data or [])}
 
