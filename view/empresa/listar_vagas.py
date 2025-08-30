@@ -112,7 +112,7 @@ Sistema de Estágios
                                     st.success(f"{nome} foi recusado com justificativa.")
 
                                     # Atualiza a lista chamando próximos estudantes antes de enviar o email
-                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
+                                    from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv2
                                     estudantes_ordenados =chamar_proximos_estudantes_disponiveisv2(supabase, vaga['id'],1)
 
                                     enviados = 0
