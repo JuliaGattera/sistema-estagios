@@ -13,7 +13,7 @@ def listar_vagas_com_candidatos(supabase, user):
     for vaga in vagas:
         st.markdown("---")
         st.markdown(f"### 📌 {vaga['titulo']}")
-        st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}") 
+        st.markdown(f"{vaga.get('descricao', 'Sem descrição.')}")
         st.markdown(f"**Criada em:** `{vaga.get('criada_em', '')}`")
         st.markdown(f"**Quantidade de Vagas:** `{vaga.get('quantidade', 1)}`")
 
@@ -52,8 +52,7 @@ def listar_vagas_com_candidatos(supabase, user):
             email = estudante["email"]
             status = entrada["status"]
             prazo_str = entrada.get("prazo_resposta")
-            
-            # Verifica o prazo e faz a conversão correta para datetime
+
             prazo = datetime.fromisoformat(prazo_str.replace("Z", "+00:00")) if prazo_str else None
 
             col1, col2 = st.columns([3, 2])
@@ -71,7 +70,6 @@ def listar_vagas_com_candidatos(supabase, user):
                                 .update({"status": "contratado"}) \
                                 .eq("id", entrada["id"]).execute()
 
-                            # Enviar email de contratação
                             from controller.email_controller import enviar_email
                             assunto = "Parabéns! Você foi contratado"
                             corpo = f"""
@@ -84,17 +82,20 @@ Parabéns e sucesso na sua nova etapa!
 Atenciosamente,
 Sistema de Estágios
 """
-                            enviar_email(email, assunto, corpo)
+                            try:
+                                enviar_email(email, assunto, corpo)
+                                st.info("Email de contratação enviado.")
+                            except Exception as email_err:
+                                st.warning(f"⚠️ Email não foi enviado: {email_err}")
 
-                            st.success(f"{nome} foi marcado como contratado e notificado por email.")
+                            st.success(f"{nome} foi marcado como contratado.")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Erro ao contratar: {e}")
 
-                    # Campo para justificar recusa
                     with st.expander(f"📩 Recusar {nome} com justificativa", expanded=False):
                         justificativa = st.text_area(
-                            f"Justificativa para recusar {nome}", 
+                            f"Justificativa para recusar {nome}",
                             key=f"just_{entrada['id']}"
                         )
                         if st.button(f"Recusar {nome}", key=f"recusar_{entrada['id']}"):
@@ -102,15 +103,18 @@ Sistema de Estágios
                                 st.warning("Escreva uma justificativa antes de recusar.")
                             else:
                                 try:
-                                    # Atualiza status para recusado
+                                    # Atualiza status
                                     supabase.table("log_vinculos_estudantes_vagas") \
                                         .update({"status": "recusado"}) \
                                         .eq("id", entrada["id"]).execute()
 
-                                    # Envia email com justificativa
-                                    from controller.email_controller import enviar_email
-                                    assunto = "Atualização sobre sua candidatura"
-                                    corpo = f"""
+                                    st.success(f"{nome} foi recusado com justificativa.")
+
+                                    # Tenta enviar email separadamente
+                                    try:
+                                        from controller.email_controller import enviar_email
+                                        assunto = "Atualização sobre sua candidatura"
+                                        corpo = f"""
 Olá {nome},
 
 Agradecemos seu interesse na vaga '{vaga['titulo']}'.
@@ -122,16 +126,18 @@ Motivo da recusa informado pela empresa:
 
 Desejamos sucesso em suas próximas candidaturas.
 
-Atenciosamente,
+Atenciosamente,  
 Sistema de Estágios
 """
-                                    enviar_email(email, assunto, corpo)
-                                    st.success(f"{nome} foi recusado com justificativa e notificado por email.")
-                                    
-                                    # Importar e chamar a função que chama novos estudantes automaticamente
+                                        enviar_email(email, assunto, corpo)
+                                        st.info("Email de recusa enviado.")
+                                    except Exception as email_err:
+                                        st.warning(f"⚠️ Email não foi enviado: {email_err}")
+
+                                    # Chamar próximo estudante
                                     from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
                                     chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
-                                    
+
                                     st.rerun()
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
