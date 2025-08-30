@@ -109,5 +109,5 @@ def show_login_screen(supabase):
 
     # Se o usuário estiver logado, redirecionar para a próxima tela (como exemplo)
     if 'logged_in' in st.session_state and st.session_state.logged_in:
-        st.write("Você está logado com sucesso!")
+        #st.write("Você está logado com sucesso!")
 
