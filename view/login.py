@@ -89,6 +89,9 @@ def show_login_screen(supabase):
                 # Marcar que o usuário está logado na sessão
                 st.session_state.logged_in = True
 
+                # Redirecionar automaticamente para a próxima tela
+                st.experimental_rerun()  # Aqui reinicia a página automaticamente
+
             except Exception as e:
                 st.error(f"Erro no login: {e}")
 
@@ -97,4 +100,4 @@ def show_login_screen(supabase):
         st.write("Bem-vindo, você está logado!")
         # Aqui você pode redirecionar para outra página ou mudar a UI
         # Exemplo:
-        st.rerun()  # Usando st.rerun() para reiniciar a página
+        st.experimental_rerun()  # Reinicia a página para redirecionar
