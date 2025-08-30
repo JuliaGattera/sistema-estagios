@@ -1,4 +1,5 @@
 # controller/vagas_controller.py
+from datetime import datetime, timezone, timedelta
 
 def selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade):
     # Buscar info da vaga (curso e disciplinas)
