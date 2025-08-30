@@ -68,6 +68,8 @@ def show_estudante_panel(supabase, logout_func):
                             "data_vinculo": datetime.utcnow().isoformat()
                         }).eq("id", vinculo["id"]).execute()
                         st.success("Você desistiu da vaga.")
+                        from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
+                        estudantes_ordenados =chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
                         st.rerun()
                     except Exception as e:
                         st.error(f"Erro ao desistir da vaga: {e}")
