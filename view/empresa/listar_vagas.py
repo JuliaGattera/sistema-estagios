@@ -113,7 +113,7 @@ Sistema de Estágios
 
                                     # Atualiza a lista chamando próximos estudantes antes de enviar o email
                                     from controller.vagas_controller import chamar_proximos_estudantes_disponiveis
-                                    chamar_proximos_estudantes_disponiveis(supabase, vaga['id'])
+                                    chamar_proximos_estudantes_disponiveisv2(supabase, vaga['id'],1)
 
                                     # Tenta enviar email informando a recusa
                                     try:
