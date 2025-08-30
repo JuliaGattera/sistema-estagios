@@ -1,5 +1,3 @@
-# view/login.py
-
 import streamlit as st
 
 def show_login_screen(supabase):
@@ -69,24 +67,27 @@ def show_login_screen(supabase):
                 user = supabase.auth.sign_in_with_password({"email": email, "password": senha})
                 user_id = user.user.id
 
+                # Verificar o tipo de usuário
                 if email == "admin@admin.com":
                     st.session_state.user = {"email": email}
                     st.session_state.user_type = 'admin'
-                    st.experimental_rerun()
+                
+                else:
+                    estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
+                    if estudante.data:
+                        st.session_state.user = estudante.data[0]
+                        st.session_state.user_type = 'estudante'
+                    else:
+                        empresa = supabase.table("empresas").select("*").eq("user_id", user_id).execute()
+                        if empresa.data:
+                            st.session_state.user = empresa.data[0]
+                            st.session_state.user_type = 'empresa'
+                        else:
+                            st.warning("Usuário não identificado como estudante, empresa ou admin.")
+                            return
 
-                estudante = supabase.table("estudantes").select("*").eq("user_id", user_id).execute()
-                if estudante.data:
-                    st.session_state.user = estudante.data[0]
-                    st.session_state.user_type = 'estudante'
-                    st.experimental_rerun()
+                # Redireciona para a próxima tela após o login
+                st.experimental_rerun()
 
-                empresa = supabase.table("empresas").select("*").eq("user_id", user_id).execute()
-                if empresa.data:
-                    st.session_state.user = empresa.data[0]
-                    st.session_state.user_type = 'empresa'
-                    st.experimental_rerun()
-
-                st.warning("Usuário não identificado como estudante, empresa ou admin.")
             except Exception as e:
                 st.error(f"Erro no login: {e}")
-
