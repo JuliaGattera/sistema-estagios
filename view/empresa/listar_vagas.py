@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
 
 def listar_vagas_com_candidatos(supabase, user):
     st.subheader("Minhas Vagas e Candidatos")
