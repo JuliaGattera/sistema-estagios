@@ -18,7 +18,7 @@ def criar_vaga(supabase, user):
     # Captura os inputs do usuário com chaves únicas
     titulo = st.text_input("Título da vaga", key="titulo")
     descricao = st.text_area("Descrição", key="descricao")
-    quantidade = st.number_input("Quantidade de vagas", min_value=1, value=1, key="quantidade")
+    quantidade = st.number_input("Quantidade de vagas", min_value=1, key="quantidade")
 
     cursos_res = supabase.table("cursos").select("id, nome").execute()
     cursos = cursos_res.data
