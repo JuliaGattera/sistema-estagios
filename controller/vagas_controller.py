@@ -303,10 +303,7 @@ Agradecemos seu interesse e desejamos sucesso nas suas futuras candidaturas!
 Atenciosamente,  
 Sistema de Estágios
 """
-        try:
-            enviar_email(email, assunto, corpo)
-        except Exception as e:
-            print(f"Erro ao enviar e-mail para {email}: {e}")
-
-
-
+        #
+        enviado, erro = enviar_email(email, assunto, corpo)
+        if not enviado:
+            print(f"[ERRO] Falha ao enviar e-mail para {email}: {erro}")
