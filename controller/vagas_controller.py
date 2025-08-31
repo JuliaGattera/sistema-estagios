@@ -296,7 +296,7 @@ def encerrar_vaga_automaticamente(supabase, vaga_id, vaga_titulo):
         corpo = f"""
 Olá {nome},
 
-A vaga '{vaga_titulo}' foi encerrada, pois todas as posições foram preenchidas.
+A vaga '{vaga_titulo}' foi encerrada.
 
 Agradecemos seu interesse e desejamos sucesso nas suas futuras candidaturas!
 
