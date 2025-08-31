@@ -152,35 +152,33 @@ def listar_vagas_com_candidatos(supabase, user):
 
                                     
                                     # Tenta enviar email informando a recusa
-                                    try:
+                                    from controller.email_controller import enviar_email
                                         
-                                        from controller.email_controller import enviar_email
+                                    assunto = "Atualização sobre sua candidatura"
+                                    corpo = f"""
+                                    Olá {nome},
                                         
-                                        assunto = "Atualização sobre sua candidatura"
-                                        corpo = f"""
-                                        Olá {nome},
+                                    Agradecemos seu interesse na vaga '{vaga['titulo']}'.
                                         
-                                        Agradecemos seu interesse na vaga '{vaga['titulo']}'.
+                                    Infelizmente, você não foi selecionado para avançar neste processo seletivo.
                                         
-                                        Infelizmente, você não foi selecionado para avançar neste processo seletivo.
+                                    Motivo da recusa informado pela empresa:
+                                    "{justificativa}"
                                         
-                                        Motivo da recusa informado pela empresa:
-                                        "{justificativa}"
+                                    Desejamos sucesso em suas próximas candidaturas.
                                         
-                                        Desejamos sucesso em suas próximas candidaturas.
+                                    Atenciosamente,  
+                                    Sistema de Estágios
+                                    """
                                         
-                                        Atenciosamente,  
-                                        Sistema de Estágios
-                                        """
-                                        
-                                        enviado, erro = enviar_email(email, assunto, corpo)
-                                        if enviado:
-                                            st.info("📨 Email de recusa enviado.")
-                                        else:
-                                            st.warning(f"⚠️ Email não enviado: {erro}")
+                                    enviado, erro = enviar_email(email, assunto, corpo)
+                                    if enviado:
+                                        st.info("📨 Email de recusa enviado.")
+                                    else:
+                                        st.warning(f"⚠️ Email não enviado: {erro}")
 
-                                        # Atualiza a página para refletir as mudanças
-                                        st.rerun()
-                                        
-                                    except Exception as e:
-                                        st.error(f"Erro ao recusar estudante: {e}")
+                                    # Atualiza a página para refletir as mudanças
+                                    st.rerun()
+                                    
+                                except Exception as e:
+                                    st.error(f"Erro ao recusar estudante: {e}")
