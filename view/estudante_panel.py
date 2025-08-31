@@ -3,32 +3,6 @@ from datetime import datetime, timezone
 
 def show_estudante_panel(supabase, logout_func):
     user = st.session_state.user
-
-    # ✅ Reset de controle de rerun seguro ao iniciar painel
-    if "ja_reiniciou" not in st.session_state:
-        st.session_state["ja_reiniciou"] = False
-
-    # ✅ Botão de logout no canto superior direito (via HTML)
-    st.markdown("""
-        <style>
-            .logout-button {
-                position: absolute;
-                top: 10px;
-                right: 20px;
-                z-index: 1000;
-            }
-        </style>
-        <div class="logout-button">
-            <form action="?logout">
-                <input type="submit" value="Logout">
-            </form>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # ✅ Detecta logout por parâmetro
-    if st.query_params.get("logout") is not None:
-        logout_func()
-
     st.success(f"Login como Estudante realizado com sucesso! Bem-vindo, {user['nome']}")
 
     aba = st.radio("Menu", ["Meus Dados", "Vagas Notificadas"])
@@ -96,11 +70,11 @@ def show_estudante_panel(supabase, logout_func):
                         }).eq("id", vinculo["id"]).execute()
 
                         st.success("Você desistiu da vaga.")
-
-                        # ✅ Protege contra loop de rerun
-                        if not st.session_state.get("ja_reiniciou", False):
-                            st.session_state["ja_reiniciou"] = True
-                            st.rerun()
-
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Erro ao desistir da vaga: {e}")
+
+    # === RODAPÉ ===
+    st.markdown("---")
+    if st.button("Logout"):
+        logout_func()
