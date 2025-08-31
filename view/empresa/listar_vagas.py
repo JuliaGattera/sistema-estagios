@@ -20,6 +20,10 @@ def listar_vagas_com_candidatos(supabase, user):
         # Botão para cancelar a vaga
         if st.button("❌ Cancelar esta vaga", key=f"cancelar_{vaga['id']}"):
             try:
+                
+                from controller.vagas_controller import encerrar_vaga_automaticamente
+                encerrar_vaga_automaticamente(supabase, vaga['id'], vaga['titulo'])
+                
                 supabase.table("vagas").delete().eq("id", vaga["id"]).execute()
                 st.success("Vaga cancelada com sucesso.")
                 st.rerun()
