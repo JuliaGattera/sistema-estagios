@@ -1,13 +1,33 @@
 import streamlit as st
 from datetime import datetime, timezone
+
 def show_estudante_panel(supabase, logout_func):
     user = st.session_state.user
+
+    # ✅ Botão de logout no canto superior direito
+    st.markdown("""
+        <style>
+            .logout-button {
+                position: absolute;
+                top: 10px;
+                right: 20px;
+                z-index: 1000;
+            }
+        </style>
+        <div class="logout-button">
+            <form action="?logout">
+                <input type="submit" value="Logout">
+            </form>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Detecta se o botão de logout foi clicado
+    if st.query_params.get("logout") is not None:
+        logout_func()
+
     st.success(f"Login como Estudante realizado com sucesso! Bem-vindo, {user['nome']}")
 
     aba = st.radio("Menu", ["Meus Dados", "Vagas Notificadas"])
-
-    if st.button("Logout"):
-        logout_func()
 
     # === ABA 1: MEUS DADOS ===
     if aba == "Meus Dados":
@@ -60,19 +80,18 @@ def show_estudante_panel(supabase, logout_func):
                 st.markdown(f"### 📌 {vaga['titulo']}")
                 st.markdown(vaga.get("descricao", "Sem descrição disponível."))
                 st.markdown(f"📅 Prazo para resposta: `{prazo.strftime('%d/%m/%Y %H:%M UTC')}`")
-                #
+
                 if st.button(f"Desistir desta vaga", key=f"desistir_{vaga_id}"):
                     try:
-
                         from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
-                        chamar_proximos_estudantes_disponiveisv3(supabase, vinculo["vaga_id"],1)
-                        
+                        chamar_proximos_estudantes_disponiveisv3(supabase, vinculo["vaga_id"], 1)
+
                         supabase.table("log_vinculos_estudantes_vagas").update({
                             "status": "desistente",
                             "data_vinculo": datetime.utcnow().isoformat()
                         }).eq("id", vinculo["id"]).execute()
+
                         st.success("Você desistiu da vaga.")
                         st.rerun()
                     except Exception as e:
                         st.error(f"Erro ao desistir da vaga: {e}")
-
