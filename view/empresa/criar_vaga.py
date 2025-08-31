@@ -107,7 +107,7 @@ def criar_vaga(supabase, user):
 
             # 🔄 Define flag para resetar campos e força rerun
             st.session_state["vaga_publicada"] = True
-            st.experimental_rerun()
+            st.rerun()
 
         except Exception as e:
             st.error(f"Erro ao criar vaga e notificar estudantes: {e}")
