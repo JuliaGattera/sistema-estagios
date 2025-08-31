@@ -260,4 +260,53 @@ def chamar_proximos_estudantes_disponiveisv3(supabase, vaga_id, quantidade):
 
     #return selecionados  # opcional, caso precise retornar
 
+def encerrar_vaga_automaticamente(supabase, vaga_id, vaga_titulo):
+    # Exclui a vaga (ou marque como encerrada, se preferir)
+    supabase.table("vagas").delete().eq("id", vaga_id).execute()
+
+    # Busca estudantes notificados que ainda não foram contratados ou recusados
+    log = supabase.table("log_vinculos_estudantes_vagas") \
+        .select("id, estudante_id") \
+        .eq("vaga_id", vaga_id) \
+        .eq("status", "notificado") \
+        .execute().data
+
+    for entrada in log:
+        estudante_id = entrada["estudante_id"]
+
+        estudante_info = supabase.table("estudantes") \
+            .select("email, nome") \
+            .eq("id", estudante_id).execute().data
+
+        if not estudante_info:
+            continue
+
+        estudante = estudante_info[0]
+        email = estudante["email"]
+        nome = estudante["nome"]
+
+        # Atualiza status como recusado
+        supabase.table("log_vinculos_estudantes_vagas") \
+            .update({"status": "recusado"}) \
+            .eq("id", entrada["id"]).execute()
+
+        # Envia e-mail informando o encerramento da vaga
+        from controller.email_controller import enviar_email
+        assunto = "Vaga encerrada"
+        corpo = f"""
+Olá {nome},
+
+A vaga '{vaga_titulo}' foi encerrada, pois todas as posições foram preenchidas.
+
+Agradecemos seu interesse e desejamos sucesso nas suas futuras candidaturas!
+
+Atenciosamente,  
+Sistema de Estágios
+"""
+        try:
+            enviar_email(email, assunto, corpo)
+        except Exception as e:
+            print(f"Erro ao enviar e-mail para {email}: {e}")
+
+
 
