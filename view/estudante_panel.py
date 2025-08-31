@@ -65,7 +65,7 @@ def show_estudante_panel(supabase, logout_func):
                     try:
 
                         from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
-                        chamar_proximos_estudantes_disponiveisv3(supabase, vinculo["id"],1)
+                        chamar_proximos_estudantes_disponiveisv3(supabase, vinculo["vaga_id"],1)
                         
                         supabase.table("log_vinculos_estudantes_vagas").update({
                             "status": "desistente",
