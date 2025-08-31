@@ -178,8 +178,8 @@ def listar_vagas_com_candidatos(supabase, user):
                                         else:
                                             st.warning(f"⚠️ Email não enviado: {erro}")
 
-                                    # Atualiza a página para refletir as mudanças
-                                    st.rerun()
+                                        # Atualiza a página para refletir as mudanças
+                                        st.rerun()
 
                                 except Exception as e:
                                     st.error(f"Erro ao recusar estudante: {e}")
