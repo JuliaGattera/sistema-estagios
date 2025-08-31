@@ -6,6 +6,15 @@ from controller.vagas_controller import selecionar_estudantes_para_vaga
 def criar_vaga(supabase, user):
     st.subheader("Nova Vaga")
 
+    # 🔄 Verifica se precisa resetar os campos após publicação
+    if st.session_state.get("vaga_publicada", False):
+        st.session_state["titulo"] = ""
+        st.session_state["descricao"] = ""
+        st.session_state["quantidade"] = 1
+        st.session_state["curso"] = ""
+        st.session_state["disciplinas"] = []
+        st.session_state["vaga_publicada"] = False
+
     # Captura os inputs do usuário com chaves únicas
     titulo = st.text_input("Título da vaga", key="titulo")
     descricao = st.text_area("Descrição", key="descricao")
@@ -16,7 +25,7 @@ def criar_vaga(supabase, user):
     curso_nomes = [c["nome"] for c in cursos]
 
     # Define curso padrão se não estiver definido ainda
-    if "curso" not in st.session_state:
+    if "curso" not in st.session_state or not st.session_state["curso"]:
         st.session_state["curso"] = curso_nomes[0] if curso_nomes else ""
 
     curso_selecionado = st.selectbox("Curso", curso_nomes, key="curso")
@@ -68,16 +77,6 @@ def criar_vaga(supabase, user):
                         "disciplina_id": disciplina_id
                     }).execute()
 
-            st.success("Vaga publicada com sucesso!")
-
-            # 🔄 Limpa os campos do formulário após publicação
-            st.session_state["titulo"] = ""
-            st.session_state["descricao"] = ""
-            st.session_state["quantidade"] = 1
-            st.session_state["curso"] = curso_nomes[0] if curso_nomes else ""
-            st.session_state["disciplinas"] = []
-
-            # Continuação do processo de notificação
             prazo = datetime.utcnow() + timedelta(days=3)
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade * 2)
 
@@ -103,7 +102,12 @@ def criar_vaga(supabase, user):
                 else:
                     st.error(f"Erro enviando email para estudante {estudante_id}: {erro}")
 
+            st.success("Vaga publicada com sucesso!")
             st.success(f"E-mails enviados para {enviados} estudantes.")
+
+            # 🔄 Define flag para resetar campos e força rerun
+            st.session_state["vaga_publicada"] = True
+            st.experimental_rerun()
 
         except Exception as e:
             st.error(f"Erro ao criar vaga e notificar estudantes: {e}")
