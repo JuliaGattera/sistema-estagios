@@ -61,50 +61,55 @@ def listar_vagas_com_candidatos(supabase, user):
                 st.markdown(f"📌 Status: `{status}`")
                 if prazo:
                     st.markdown(f"📅 Prazo: `{prazo.strftime('%d/%m/%Y %H:%M UTC')}`")
-
+            #
             with col2:
                 if status == "notificado":
                     if st.button(f"✅ Contratar {nome}", key=f"contratar_{entrada['id']}"):
                         try:
+                            # Atualiza o status do estudante para "contratado"
                             supabase.table("log_vinculos_estudantes_vagas") \
                                 .update({"status": "contratado"}) \
                                 .eq("id", entrada["id"]).execute()
-                    
+            
                             # Conta quantos já foram contratados para essa vaga
                             contratados_res = supabase.table("log_vinculos_estudantes_vagas") \
                                 .select("id") \
                                 .eq("vaga_id", vaga['id']) \
                                 .eq("status", "contratado").execute()
-                    
+            
                             total_contratados = len(contratados_res.data or [])
-                    
+            
                             if total_contratados < vaga['quantidade']:
+                                # Ainda há vagas → chama o próximo estudante
                                 from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
-                                chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'], 1)                            
-                            
-                            #from controller.vagas_controller import chamar_proximos_estudantes_disponiveisv3
-                            #chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'],1)
-                            
+                                chamar_proximos_estudantes_disponiveisv3(supabase, vaga['id'], 1)
+                            else:
+                                # Vagas preenchidas → encerra a vaga e notifica os demais
+                                from controller.vagas_controller import encerrar_vaga_automaticamente
+                                encerrar_vaga_automaticamente(supabase, vaga['id'], vaga['titulo'])
+            
+                            # Envia email ao contratado
                             from controller.email_controller import enviar_email
                             assunto = "Parabéns! Você foi contratado"
                             corpo = f"""
-Olá {nome},
-
-Temos o prazer de informar que você foi contratado para a vaga '{vaga['titulo']}'.
-
-Parabéns e sucesso na sua nova etapa!
-
-Atenciosamente,
-Sistema de Estágios
-"""
+            Olá {nome},
+            
+            Temos o prazer de informar que você foi contratado para a vaga '{vaga['titulo']}'.
+            
+            Parabéns e sucesso na sua nova etapa!
+            
+            Atenciosamente,
+            Sistema de Estágios
+            """
                             try:
                                 enviar_email(email, assunto, corpo)
                                 st.info("Email de contratação enviado.")
                             except Exception as email_err:
                                 st.warning(f"⚠️ Email não foi enviado: {email_err}")
-
+            
                             st.success(f"{nome} foi marcado como contratado.")
                             st.rerun()
+            
                         except Exception as e:
                             st.error(f"Erro ao contratar: {e}")
 
