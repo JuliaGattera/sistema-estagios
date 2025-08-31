@@ -1,5 +1,6 @@
 import streamlit as st
 from datetime import datetime, timezone, timedelta
+import time
 
 
 def listar_vagas_com_candidatos(supabase, user):
@@ -26,6 +27,7 @@ def listar_vagas_com_candidatos(supabase, user):
                 
                 supabase.table("vagas").delete().eq("id", vaga["id"]).execute()
                 st.success("Vaga cancelada com sucesso.")
+                time.sleep(2)
                 st.rerun()
             except Exception as e:
                 st.error(f"Erro ao cancelar a vaga: {e}")
@@ -114,6 +116,7 @@ def listar_vagas_com_candidatos(supabase, user):
                                 st.warning(f"⚠️ Email não enviado: {erro}")
             
                             st.success(f"{nome} foi marcado como contratado.")
+                            time.sleep(2)
                             st.rerun()
             
                         except Exception as e:
@@ -178,6 +181,7 @@ def listar_vagas_com_candidatos(supabase, user):
                                         st.warning(f"⚠️ Email não enviado: {erro}")
 
                                     # Atualiza a página para refletir as mudanças
+                                    time.sleep(2)
                                     st.rerun()
                                     
                                 except Exception as e:
