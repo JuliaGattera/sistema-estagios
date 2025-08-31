@@ -153,6 +153,7 @@ def listar_vagas_com_candidatos(supabase, user):
                                     
                                     # Tenta enviar email informando a recusa
                                     try:
+                                        
                                         from controller.email_controller import enviar_email
                                         
                                         assunto = "Atualização sobre sua candidatura"
@@ -180,6 +181,6 @@ def listar_vagas_com_candidatos(supabase, user):
 
                                         # Atualiza a página para refletir as mudanças
                                         st.rerun()
-
-                                except Exception as e:
-                                    st.error(f"Erro ao recusar estudante: {e}")
+                                        
+                                    except Exception as e:
+                                        st.error(f"Erro ao recusar estudante: {e}")
