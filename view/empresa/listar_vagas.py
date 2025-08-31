@@ -94,22 +94,24 @@ def listar_vagas_com_candidatos(supabase, user):
             
                             # Envia email ao contratado
                             from controller.email_controller import enviar_email
+                            
                             assunto = "Parabéns! Você foi contratado"
                             corpo = f"""
-            Olá {nome},
-            
-            Temos o prazer de informar que você foi contratado para a vaga '{vaga['titulo']}'.
-            
-            Parabéns e sucesso na sua nova etapa!
-            
-            Atenciosamente,
-            Sistema de Estágios
-            """
-                            try:
-                                enviar_email(email, assunto, corpo)
-                                st.info("Email de contratação enviado.")
-                            except Exception as email_err:
-                                st.warning(f"⚠️ Email não foi enviado: {email_err}")
+                            Olá {nome},
+                            
+                            Temos o prazer de informar que você foi contratado para a vaga '{vaga['titulo']}'.
+                            
+                            Parabéns e sucesso na sua nova etapa!
+                            
+                            Atenciosamente,
+                            Sistema de Estágios
+                            """
+                            
+                            enviado, erro = enviar_email(email, assunto, corpo)
+                            if enviado:
+                                st.info("📨 Email de contratação enviado.")
+                            else:
+                                st.warning(f"⚠️ Email não enviado: {erro}")
             
                             st.success(f"{nome} foi marcado como contratado.")
                             st.rerun()
@@ -152,28 +154,29 @@ def listar_vagas_com_candidatos(supabase, user):
                                     # Tenta enviar email informando a recusa
                                     try:
                                         from controller.email_controller import enviar_email
-
+                                        
                                         assunto = "Atualização sobre sua candidatura"
                                         corpo = f"""
-Olá {nome},
-
-Agradecemos seu interesse na vaga '{vaga['titulo']}'.
-
-Infelizmente, você não foi selecionado para avançar neste processo seletivo.
-
-Motivo da recusa informado pela empresa:
-"{justificativa}"
-
-Desejamos sucesso em suas próximas candidaturas.
-
-Atenciosamente,  
-Sistema de Estágios
-"""
-
-                                        enviar_email(email, assunto, corpo)
-                                        st.info("Email de recusa enviado.")
-                                    except Exception as email_err:
-                                        st.warning(f"⚠️ Email não foi enviado: {email_err}")
+                                        Olá {nome},
+                                        
+                                        Agradecemos seu interesse na vaga '{vaga['titulo']}'.
+                                        
+                                        Infelizmente, você não foi selecionado para avançar neste processo seletivo.
+                                        
+                                        Motivo da recusa informado pela empresa:
+                                        "{justificativa}"
+                                        
+                                        Desejamos sucesso em suas próximas candidaturas.
+                                        
+                                        Atenciosamente,  
+                                        Sistema de Estágios
+                                        """
+                                        
+                                        enviado, erro = enviar_email(email, assunto, corpo)
+                                        if enviado:
+                                            st.info("📨 Email de recusa enviado.")
+                                        else:
+                                            st.warning(f"⚠️ Email não enviado: {erro}")
 
                                     # Atualiza a página para refletir as mudanças
                                     st.rerun()
