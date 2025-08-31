@@ -6,21 +6,30 @@ from controller.vagas_controller import selecionar_estudantes_para_vaga
 def criar_vaga(supabase, user):
     st.subheader("Nova Vaga")
 
-    # Captura os inputs do usuário
-    titulo = st.text_input("Título da vaga")
-    descricao = st.text_area("Descrição")
-    quantidade = st.number_input("Quantidade de vagas", min_value=1, value=1)
+    # Captura os inputs do usuário com chaves únicas
+    titulo = st.text_input("Título da vaga", key="titulo")
+    descricao = st.text_area("Descrição", key="descricao")
+    quantidade = st.number_input("Quantidade de vagas", min_value=1, value=1, key="quantidade")
 
     cursos_res = supabase.table("cursos").select("id, nome").execute()
     cursos = cursos_res.data
     curso_nomes = [c["nome"] for c in cursos]
-    curso_selecionado = st.selectbox("Curso", curso_nomes)
+
+    # Define curso padrão se não estiver definido ainda
+    if "curso" not in st.session_state:
+        st.session_state["curso"] = curso_nomes[0] if curso_nomes else ""
+
+    curso_selecionado = st.selectbox("Curso", curso_nomes, key="curso")
     curso_id = next((c["id"] for c in cursos if c["nome"] == curso_selecionado), None)
 
     disciplinas_res = supabase.table("disciplinas").select("id, nome").eq("curso_id", curso_id).execute()
     disciplinas = disciplinas_res.data
     nomes_disciplinas = [d["nome"] for d in disciplinas]
-    disciplinas_selecionadas = st.multiselect("Disciplinas exigidas", nomes_disciplinas)
+
+    if "disciplinas" not in st.session_state:
+        st.session_state["disciplinas"] = []
+
+    disciplinas_selecionadas = st.multiselect("Disciplinas exigidas", nomes_disciplinas, key="disciplinas")
 
     if st.button("Publicar Vaga"):
         if not titulo or not curso_id:
@@ -36,11 +45,11 @@ def criar_vaga(supabase, user):
                 .eq("descricao", descricao) \
                 .eq("curso_id", curso_id) \
                 .execute()
-            
+
             if vaga_existente.data:
                 st.warning("Já existe uma vaga com os mesmos dados. Evite duplicações.")
                 return
-            
+
             vaga_insert = supabase.table("vagas").insert({
                 "empresa_id": user["id"],
                 "titulo": titulo,
@@ -61,10 +70,17 @@ def criar_vaga(supabase, user):
 
             st.success("Vaga publicada com sucesso!")
 
+            # 🔄 Limpa os campos do formulário após publicação
+            st.session_state["titulo"] = ""
+            st.session_state["descricao"] = ""
+            st.session_state["quantidade"] = 1
+            st.session_state["curso"] = curso_nomes[0] if curso_nomes else ""
+            st.session_state["disciplinas"] = []
+
+            # Continuação do processo de notificação
             prazo = datetime.utcnow() + timedelta(days=3)
-            # Selecionar o dobro da quantidade para ter candidatos reservas
             estudantes_ordenados = selecionar_estudantes_para_vaga(supabase, vaga_id, quantidade * 2)
-            
+
             enviados = 0
             for estudante_id, media in estudantes_ordenados:
                 supabase.table("log_vinculos_estudantes_vagas").insert({
