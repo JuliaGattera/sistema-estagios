@@ -4,7 +4,11 @@ from datetime import datetime, timezone
 def show_estudante_panel(supabase, logout_func):
     user = st.session_state.user
 
-    # ✅ Botão de logout no canto superior direito
+    # ✅ Reset de controle de rerun seguro ao iniciar painel
+    if "ja_reiniciou" not in st.session_state:
+        st.session_state["ja_reiniciou"] = False
+
+    # ✅ Botão de logout no canto superior direito (via HTML)
     st.markdown("""
         <style>
             .logout-button {
@@ -21,7 +25,7 @@ def show_estudante_panel(supabase, logout_func):
         </div>
     """, unsafe_allow_html=True)
 
-    # Detecta se o botão de logout foi clicado
+    # ✅ Detecta logout por parâmetro
     if st.query_params.get("logout") is not None:
         logout_func()
 
@@ -92,6 +96,11 @@ def show_estudante_panel(supabase, logout_func):
                         }).eq("id", vinculo["id"]).execute()
 
                         st.success("Você desistiu da vaga.")
-                        st.rerun()
+
+                        # ✅ Protege contra loop de rerun
+                        if not st.session_state.get("ja_reiniciou", False):
+                            st.session_state["ja_reiniciou"] = True
+                            st.rerun()
+
                     except Exception as e:
                         st.error(f"Erro ao desistir da vaga: {e}")
